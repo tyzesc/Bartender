@@ -24,7 +24,7 @@ public class App extends JavaPlugin implements Listener {
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
         // prevent event triggered twice.
-        if (event.getHand().equals(EquipmentSlot.HAND) == false)
+        if (event.getHand() == null || event.getHand().equals(EquipmentSlot.HAND) == false)
             return;
 
         Block block = event.getClickedBlock();
@@ -32,8 +32,11 @@ public class App extends JavaPlugin implements Listener {
             return;
 
         Player p = event.getPlayer();
+        if (p == null)
+            return;
+
         ItemStack itemInHand = p.getInventory().getItemInMainHand();
-        if (itemInHand == null || itemInHand.getType().equals(Material.GLASS_BOTTLE) == false)
+        if (itemInHand == null || itemInHand.isSimilar(new ItemStack(Material.GLASS_BOTTLE)) == false)
             return;
 
         int level = p.getLevel();
@@ -58,10 +61,11 @@ public class App extends JavaPlugin implements Listener {
         exp = now * 1f / expRequireTable.get(level);
 
         if (p.getInventory().addItem(new ItemStack(Material.EXP_BOTTLE)).isEmpty()) {
-            int amount = p.getInventory().getItemInMainHand().getAmount();
-            p.getInventory().getItemInMainHand().setAmount(amount - 1);
+            p.getInventory().removeItem(new ItemStack(Material.GLASS_BOTTLE, 1));
             p.setExp(exp * 1f);
             p.setLevel(level);
+        } else {
+            p.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText("§c§l背包空間不足"));
         }
     }
 
